@@ -12,7 +12,7 @@ from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message, 
 from plugins.config import Config
 from plugins.database.add import add_user_to_database
 from plugins.database.database import db
-from plugins.forcesub import handle_force_subscribe
+from functions.forcesub import handle_force_subscribe
 from plugins.settings.settings import *
 from plugins.translation import Translation
 from functions.help_Nekmo_ffmpeg import take_screen_shot
