@@ -2,6 +2,7 @@ import logging
 import asyncio
 import json
 import time
+from plugins.config import Config
 from pyrogram import filters, Client, enums
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from functions.forcesub import handle_force_subscribe
