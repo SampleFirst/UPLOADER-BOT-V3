@@ -29,7 +29,7 @@ from functions.ran_text import random_char
 async def youtube_dl_call_back(bot, update):
     cb_data = update.data
     # youtube_dl extractors
-    lzmsg = query.message.reply_to_message  # msg will be callback query
+    lzmsg = update.message.reply_to_message  # msg will be callback query
     message_idx = lzmsg.id #getting id
     print(f"{message_idx}") 
   
