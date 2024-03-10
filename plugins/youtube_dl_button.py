@@ -88,7 +88,7 @@ async def youtube_dl_call_back(client, query):
     await client.edit_message_text(
         text=Translation.DOWNLOAD_START,
         chat_id=query.message.chat.id,
-        message_id=query.message.message_id
+        message_id=message_idx
     )
     description = Translation.CUSTOM_CAPTION_UL_FILE
     if "fulltitle" in response_json:
@@ -155,7 +155,7 @@ async def youtube_dl_call_back(client, query):
         error_message = e_response.replace(ad_string_to_replace, "")
         await client.edit_message_text(
             chat_id=query.message.chat.id,
-            message_id=query.message.message_id,
+            message_id=message_idx,
             text=error_message
         )
         return False
@@ -180,7 +180,7 @@ async def youtube_dl_call_back(client, query):
             await client.edit_message_text(
                 chat_id=query.message.chat.id,
                 text=Translation.RCHD_TG_API_LIMIT.format(time_taken_for_download, humanbytes(file_size)),
-                message_id=query.message.message_id
+                message_id=message_idx
             )
         else:
             is_w_f = False
@@ -196,7 +196,7 @@ async def youtube_dl_call_back(client, query):
             await client.edit_message_text(
                 text=Translation.UPLOAD_START,
                 chat_id=query.message.chat.id,
-                message_id=query.message.message_id
+                message_id=message_idx
             )
 
             # ref: message from @Sources_codes
@@ -283,6 +283,6 @@ async def youtube_dl_call_back(client, query):
             await client.edit_message_text(
                 text=Translation.AFTER_SUCCESSFUL_UPLOAD_MSG_WITH_TS.format(time_taken_for_download, time_taken_for_upload),
                 chat_id=query.message.chat.id,
-                message_id=query.message.message_id,
+                message_id=message_idx,
                 disable_web_page_preview=True
             )
