@@ -1,96 +1,95 @@
-# Copyright LISA-KOREA | @LISA_FAN_LK
-
-
 import logging
-logging.basicConfig(level=logging.DEBUG,
-                    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-logger = logging.getLogger(__name__)
-
-import random
-import numpy
 import os
-from PIL import Image
-import time
-
-# the Strings used for this "thing"
-from plugins.translation import Translation
-from pyrogram import Client
-
-from hachoir.metadata import extractMetadata
-from hachoir.parser import createParser
-logging.getLogger("pyrogram").setLevel(logging.WARNING)
-from pyrogram import filters
-from functions.help_Nekmo_ffmpeg import take_screen_shot
-import psutil
+import random
 import shutil
 import string
-import asyncio
 from asyncio import TimeoutError
+from asyncio import asyncio
+from pyrogram import Client, filters
 from pyrogram.errors import MessageNotModified
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message, CallbackQuery, ForceReply
-from functions.forcesub import handle_force_subscribe
-from plugins.database.database import db
 from plugins.config import Config
 from plugins.database.add import add_user_to_database
+from plugins.database.database import db
+from plugins.forcesub import handle_force_subscribe
 from plugins.settings.settings import *
+from plugins.translation import Translation
+from functions.help_Nekmo_ffmpeg import take_screen_shot
+from hachoir.metadata import extractMetadata
+from hachoir.parser import createParser
+from PIL import Image
+import psutil
+
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
+logging.getLogger("pyrogram").setLevel(logging.WARNING)
 
 
 @Client.on_message(filters.private & filters.photo)
 async def photo_handler(bot: Client, event: Message):
     if not event.from_user:
-        return await event.reply_text("I don't know about you sar :(")
+        return await event.reply_text("I don't know about you, sir :(")
     await add_user_to_database(bot, event)
     if Config.UPDATES_CHANNEL:
-      fsub = await handle_force_subscribe(bot, event)
-      if fsub == 400:
-        return
+        fsub = await handle_force_subscribe(bot, event)
+        if fsub == 400:
+            return
     editable = await event.reply_text("**👀 Processing...**")
     await db.set_thumbnail(event.from_user.id, thumbnail=event.photo.file_id)
-    await editable.edit("**✅ ᴄᴜsᴛᴏᴍ ᴛʜᴜᴍʙɴᴀɪʟ sᴀᴠᴇᴅ sᴜᴄᴄᴇssғᴜʟʟʏ!!**")
+    await editable.edit("**✅ Custom thumbnail saved successfully!**")
 
 
 @Client.on_message(filters.private & filters.command(["delthumb", "deletethumbnail"]))
 async def delete_thumb_handler(bot: Client, event: Message):
     if not event.from_user:
-        return await event.reply_text("I don't know about you sar :(")
+        return await event.reply_text("I don't know about you, sir :(")
     await add_user_to_database(bot, event)
     if Config.UPDATES_CHANNEL:
-      fsub = await handle_force_subscribe(bot, event)
-      if fsub == 400:
-        return
+        fsub = await handle_force_subscribe(bot, event)
+        if fsub == 400:
+            return
 
     await db.set_thumbnail(event.from_user.id, thumbnail=None)
     await event.reply_text(
-        "**🗑️ ᴄᴜsᴛᴏᴍ ᴛʜᴜᴍʙɴᴀɪʟ ᴅᴇʟᴇᴛᴇᴅ sᴜᴄᴄᴇssғᴜʟʟʏ!!**",
-        reply_markup=InlineKeyboardMarkup([
-            [InlineKeyboardButton("⚙ ᴄᴏɴғɪɢᴜʀᴇ sᴇᴛᴛɪɴɢs 👀", callback_data="OpenSettings")]
-        ])
+        "**🗑️ Custom thumbnail deleted successfully!**",
+        reply_markup=InlineKeyboardMarkup(
+            [
+                [
+                    InlineKeyboardButton("⚙️ Configure Settings", callback_data="OpenSettings")
+                ]
+            ]
+        )
     )
+
 
 @Client.on_message(filters.private & filters.command("showthumb"))
 async def viewthumbnail(bot, update):
     if not update.from_user:
-        return await update.reply_text("I don't know about you sar :(")
-    await add_user_to_database(bot, update) 
+        return await update.reply_text("I don't know about you, sir :(")
+    await add_user_to_database(bot, update)
     if Config.UPDATES_CHANNEL:
-      fsub = await handle_force_subscribe(bot, update)
-      if fsub == 400:
-        return   
+        fsub = await handle_force_subscribe(bot, update)
+        if fsub == 400:
+            return
     thumbnail = await db.get_thumbnail(update.from_user.id)
     if thumbnail is not None:
         await bot.send_photo(
-        chat_id=update.chat.id,
-        photo=thumbnail,
-        caption=f"ʏᴏᴜʀ ᴄᴜʀʀᴇɴᴛ sᴀᴠᴇᴅ ᴛʜᴜᴍʙɴᴀɪʟ 🦠",
-        reply_markup=InlineKeyboardMarkup(
-                    [[InlineKeyboardButton("🗑️ ᴅᴇʟᴇᴛᴇ ᴛʜᴜᴍʙɴᴀɪʟ", callback_data="deleteThumbnail")]]
-                ),
-        reply_to_message_id=update.message_id)
+            chat_id=update.chat.id,
+            photo=thumbnail,
+            caption="Your current saved thumbnail",
+            reply_markup=InlineKeyboardMarkup(
+                [
+                    [
+                        InlineKeyboardButton("🗑️ Delete Thumbnail", callback_data="deleteThumbnail")
+                    ]
+                ]
+            ),
+            reply_to_message_id=update.message_id)
     else:
-        await update.reply_text(text=f"ɴᴏ ᴛʜᴜᴍʙɴᴀɪʟ ғᴏᴜɴᴅ 🤒")
+        await update.reply_text(text="No thumbnail found 🤒")
 
 
-async def Gthumb01(bot, update):
+async def get_thumbnail(bot, update, duration, download_directory):
     thumb_image_path = Config.DOWNLOAD_LOCATION + "/" + str(update.from_user.id) + ".jpg"
     db_thumbnail = await db.get_thumbnail(update.from_user.id)
     if db_thumbnail is not None:
@@ -104,7 +103,8 @@ async def Gthumb01(bot, update):
 
     return thumbnail
 
-async def Gthumb02(bot, update, duration, download_directory):
+
+async def get_thumbnail_v2(bot, update, duration, download_directory):
     thumb_image_path = Config.DOWNLOAD_LOCATION + "/" + str(update.from_user.id) + ".jpg"
     db_thumbnail = await db.get_thumbnail(update.from_user.id)
     if db_thumbnail is not None:
@@ -114,41 +114,45 @@ async def Gthumb02(bot, update, duration, download_directory):
 
     return thumbnail
 
-async def Mdata01(download_directory):
 
-          width = 0
-          height = 0
-          duration = 0
-          metadata = extractMetadata(createParser(download_directory))
-          if metadata is not None:
-              if metadata.has("duration"):
-                  duration = metadata.get('duration').seconds
-              if metadata.has("width"):
-                  width = metadata.get("width")
-              if metadata.has("height"):
-                  height = metadata.get("height")
+async def extract_metadata01(download_directory):
 
-          return width, height, duration
+    width = 0
+    height = 0
+    duration = 0
+    metadata = extractMetadata(createParser(download_directory))
+    if metadata is not None:
+        if metadata.has("duration"):
+            duration = metadata.get('duration').seconds
+        if metadata.has("width"):
+            width = metadata.get("width")
+        if metadata.has("height"):
+            height = metadata.get("height")
 
-async def Mdata02(download_directory):
+    return width, height, duration
 
-          width = 0
-          duration = 0
-          metadata = extractMetadata(createParser(download_directory))
-          if metadata is not None:
-              if metadata.has("duration"):
-                  duration = metadata.get('duration').seconds
-              if metadata.has("width"):
-                  width = metadata.get("width")
 
-          return width, duration
+async def extract_metadata02(download_directory):
 
-async def Mdata03(download_directory):
+    width = 0
+    duration = 0
+    metadata = extractMetadata(createParser(download_directory))
+    if metadata is not None:
+        if metadata.has("duration"):
+            duration = metadata.get('duration').seconds
+        if metadata.has("width"):
+            width = metadata.get("width")
 
-          duration = 0
-          metadata = extractMetadata(createParser(download_directory))
-          if metadata is not None:
-              if metadata.has("duration"):
-                  duration = metadata.get('duration').seconds
+    return width, duration
 
-          return duration
+
+async def extract_metadata03(download_directory):
+
+    duration = 0
+    metadata = extractMetadata(createParser(download_directory))
+    if metadata is not None:
+        if metadata.has("duration"):
+            duration = metadata.get('duration').seconds
+
+    return duration
+  
