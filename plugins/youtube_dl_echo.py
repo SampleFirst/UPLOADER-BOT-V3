@@ -160,7 +160,8 @@ async def echo(bot, update):
         await chk.delete()
         await bot.send_message(
             chat_id=update.chat.id,
-            text=Translation.FORMAT_SELECTION.format(Thumbnail) + "\n" + Translation.SET_CUSTOM_USERNAME_PASSWORD,
-            reply_markup=reply
-
-      
+            text=Translation.FORMAT_SELECTION,
+            reply_markup=reply_markup,
+            parse_mode=enums.ParseMode.HTML,
+            reply_to_message_id=update.message_id
+        )
