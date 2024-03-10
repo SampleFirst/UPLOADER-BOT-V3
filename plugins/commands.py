@@ -12,25 +12,25 @@ from plugins.database.add import add_user_to_database
 from functions.forcesub import handle_force_subscribe
 
 @Client.on_message(filters.command(["start"]) & filters.private)
-async def start(bot, update):
+async def start(client, message):
     try:
-        if not update.from_user:
-            return await update.reply_text("I don't know about you, sir.")
+        if not message.from_user:
+            return await message.reply_text("I don't know about you, sir.")
         
-        await add_user_to_database(bot, update)
+        await add_user_to_database(client, message)
         
-        await bot.send_message(
+        await client.send_message(
             Config.LOG_CHANNEL,
-            f"#NEW_USER: \n\nNew User [{update.from_user.first_name}](tg://user?id={update.from_user.id}) started @{Config.BOT_USERNAME} !!"
+            f"#NEW_USER: \n\nNew User [{message.from_user.first_name}](tg://user?id={message.from_user.id}) started @{Config.BOT_USERNAME} !!"
         )
         
         if Config.UPDATES_CHANNEL:
-            fsub = await handle_force_subscribe(bot, update)
+            fsub = await handle_force_subscribe(client, message)
             if fsub == 400:
                 return
         
-        await update.reply_text(
-            text=Translation.START_TEXT.format(update.from_user.mention),
+        await message.reply_text(
+            text=Translation.START_TEXT.format(message.from_user.mention),
             disable_web_page_preview=True,
             reply_markup=Translation.START_BUTTONS
         )
