@@ -1,18 +1,18 @@
-# LISA-KOREA | @LISA_FAN_LK
-
 import os
+import logging
+
+from pyrogram import Client, types
+from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from functions.display_progress import progress_for_pyrogram, humanbytes
+
 from plugins.config import Config
 from plugins.dl_button import ddl_call_back
 from plugins.youtube_dl_button import youtube_dl_call_back
 from plugins.settings.settings import OpenSettings
 from plugins.translation import Translation
-from pyrogram import Client, types
-from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from plugins.database.database import db
-import logging
-logging.basicConfig(level=logging.DEBUG,
-                    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
 
@@ -46,11 +46,17 @@ async def button(bot, update):
             await update.answer("You didn't set any custom thumbnail!", show_alert=True)
         else:
             await update.answer()
-            await bot.send_photo(update.message.chat.id, thumbnail, "Custom Thumbnail",
-                               reply_markup=types.InlineKeyboardMarkup([[
-                                   types.InlineKeyboardButton("Delete Thumbnail",
-                                                              callback_data="deleteThumbnail")
-                               ]]))
+            await bot.send_photo(
+                update.message.chat.id, 
+                thumbnail, "Custom Thumbnail",
+                reply_markup=types.InlineKeyboardMarkup(
+                    [
+                        [
+                            types.InlineKeyboardButton("Delete Thumbnail", callback_data="deleteThumbnail")
+                        ]
+                    ]
+                )
+            )
     elif update.data == "deleteThumbnail":
         await db.set_thumbnail(update.from_user.id, None)
         await update.answer("Okay, I deleted your custom thumbnail. Now I will apply default thumbnail.", show_alert=True)
