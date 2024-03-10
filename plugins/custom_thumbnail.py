@@ -4,7 +4,8 @@ import random
 import shutil
 import string
 from asyncio import TimeoutError
-from asyncio import asyncio
+import asyncio
+from asyncio import TimeoutError
 from pyrogram import Client, filters
 from pyrogram.errors import MessageNotModified
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message, CallbackQuery, ForceReply
