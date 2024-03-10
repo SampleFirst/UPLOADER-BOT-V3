@@ -1,7 +1,5 @@
-# ©️ Copyright @Shrimadhav Uk | @LISA_FAN_LK
 import logging
-logging.basicConfig(level=logging.DEBUG,
-                    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 import asyncio
 import aiohttp
@@ -24,14 +22,16 @@ from PIL import Image
 
 
 
-async def ddl_call_back(bot, update):
-    logger.info(update)
-    cb_data = update.data
-    # youtube_dl extractors
+async def ddl_call_back(client, query):
+    logger.info(query)
+    cb_data = query.data
+    msg = query.message.reply_to_message  # msg will be callback query
+    message_idx = msg.id
+    
     tg_send_type, youtube_dl_format, youtube_dl_ext = cb_data.split("=")
     thumb_image_path = Config.DOWNLOAD_LOCATION + \
-        "/" + str(update.from_user.id) + ".jpg"
-    youtube_dl_url = update.message.reply_to_message.text
+        "/" + str(query.from_user.id) + ".jpg"
+    youtube_dl_url = query.message.reply_to_message.text
     custom_file_name = os.path.basename(youtube_dl_url)
     if "|" in youtube_dl_url:
         url_parts = youtube_dl_url.split("|")
@@ -39,7 +39,7 @@ async def ddl_call_back(bot, update):
             youtube_dl_url = url_parts[0]
             custom_file_name = url_parts[1]
         else:
-            for entity in update.message.reply_to_message.entities:
+            for entity in query.message.reply_to_message.entities:
                 if entity.type == "text_link":
                     youtube_dl_url = entity.url
                 elif entity.type == "url":
@@ -54,23 +54,23 @@ async def ddl_call_back(bot, update):
         logger.info(youtube_dl_url)
         logger.info(custom_file_name)
     else:
-        for entity in update.message.reply_to_message.entities:
+        for entity in query.message.reply_to_message.entities:
             if entity.type == "text_link":
                 youtube_dl_url = entity.url
             elif entity.type == "url":
                 o = entity.offset
                 l = entity.length
                 youtube_dl_url = youtube_dl_url[o:o + l]
-    user = await bot.get_me()
+    user = await client.get_me()
     mention = user["mention"]
     description = Translation.CUSTOM_CAPTION_UL_FILE.format(mention)
     start = datetime.now()
-    await bot.edit_message_text(
+    await client.edit_message_text(
         text=Translation.DOWNLOAD_START,
-        chat_id=update.message.chat.id,
-        message_id=update.message.message_id
+        chat_id=query.message.chat.id,
+        message_id=query.message.message_id
     )
-    tmp_directory_for_each_user = Config.DOWNLOAD_LOCATION + "/" + str(update.from_user.id)
+    tmp_directory_for_each_user = Config.DOWNLOAD_LOCATION + "/" + str(query.from_user.id)
     if not os.path.isdir(tmp_directory_for_each_user):
         os.makedirs(tmp_directory_for_each_user)
     download_directory = tmp_directory_for_each_user + "/" + custom_file_name
@@ -79,27 +79,27 @@ async def ddl_call_back(bot, update):
         c_time = time.time()
         try:
             await download_coroutine(
-                bot,
+                client,
                 session,
                 youtube_dl_url,
                 download_directory,
-                update.message.chat.id,
-                update.message.message_id,
+                query.message.chat.id,
+                query.message.message_id,
                 c_time
             )
         except asyncio.TimeOutError:
-            await bot.edit_message_text(
+            await client.edit_message_text(
                 text=Translation.SLOW_URL_DECED,
-                chat_id=update.message.chat.id,
-                message_id=update.message.message_id
+                chat_id=query.message.chat.id,
+                message_id=query.message.message_id
             )
             return False
     if os.path.exists(download_directory):
         end_one = datetime.now()
-        await bot.edit_message_text(
+        await client.edit_message_text(
             text=Translation.UPLOAD_START,
-            chat_id=update.message.chat.id,
-            message_id=update.message.message_id
+            chat_id=query.message.chat.id,
+            message_id=query.message.message_id
         )
         file_size = Config.TG_MAX_FILE_SIZE + 1
         try:
@@ -109,34 +109,34 @@ async def ddl_call_back(bot, update):
             # https://stackoverflow.com/a/678242/4723940
             file_size = os.stat(download_directory).st_size
         if file_size > Config.TG_MAX_FILE_SIZE:
-            await bot.edit_message_text(
-                chat_id=update.message.chat.id,
+            await client.edit_message_text(
+                chat_id=query.message.chat.id,
                 text=Translation.RCHD_TG_API_LIMIT,
-                message_id=update.message.message_id
+                message_id=query.message.message_id
             )
         else:
-            # Support Group @NT_BOTS_SUPPORT
+            # Support Group @NT_clientS_SUPPORT
             start_time = time.time()
-            if (await db.get_upload_as_doc(update.from_user.id)) is False:
-                thumbnail = await Gthumb01(bot, update)
-                await bot.send_document(
-                    chat_id=update.message.chat.id,
+            if (await db.get_upload_as_doc(query.from_user.id)) is False:
+                thumbnail = await Gthumb01(client, query)
+                await client.send_document(
+                    chat_id=query.message.chat.id,
                     document=download_directory,
                     thumb=thumbnail,
                     caption=description,
-                    reply_to_message_id=update.message.reply_to_message.message_id,
+                    reply_to_message_id=message_idx,
                     progress=progress_for_pyrogram,
                     progress_args=(
                         Translation.UPLOAD_START,
-                        update.message,
+                        query.message,
                         start_time
                     )
                 )
             else:
                  width, height, duration = await Mdata01(download_directory)
-                 thumb_image_path = await Gthumb02(bot, update, duration, download_directory)
-                 await bot.send_video(
-                    chat_id=update.message.chat.id,
+                 thumb_image_path = await Gthumb02(client, query, duration, download_directory)
+                 await client.send_video(
+                    chat_id=query.message.chat.id,
                     video=download_directory,
                     caption=description,
                     duration=duration,
@@ -144,46 +144,46 @@ async def ddl_call_back(bot, update):
                     height=height,
                     supports_streaming=True,
                     thumb=thumb_image_path,
-                    reply_to_message_id=update.message.reply_to_message.message_id,
+                    reply_to_message_id=message_idx,
                     progress=progress_for_pyrogram,
                     progress_args=(
                         Translation.UPLOAD_START,
-                        update.message,
+                        query.message,
                         start_time
                     )
                 )
             if tg_send_type == "audio":
                 duration = await Mdata03(download_directory)
-                thumbnail = await Gthumb01(bot, update)
-                await bot.send_audio(
-                    chat_id=update.message.chat.id,
+                thumbnail = await Gthumb01(client, query)
+                await client.send_audio(
+                    chat_id=query.message.chat.id,
                     audio=download_directory,
                     caption=description,
                     parse_mode="HTML",
                     duration=duration,
                     thumb=thumbnail,
-                    reply_to_message_id=update.message.reply_to_message.message_id,
+                    reply_to_message_id=message_idx,
                     progress=progress_for_pyrogram,
                     progress_args=(
                         Translation.UPLOAD_START,
-                        update.message,
+                        query.message,
                         start_time
                     )
                 )
             elif tg_send_type == "vm":
                 width, duration = await Mdata02(download_directory)
-                thumbnail = await Gthumb02(bot, update, duration, download_directory)
-                await bot.send_video_note(
-                    chat_id=update.message.chat.id,
+                thumbnail = await Gthumb02(client, query, duration, download_directory)
+                await client.send_video_note(
+                    chat_id=query.message.chat.id,
                     video_note=download_directory,
                     duration=duration,
                     length=width,
                     thumb=thumbnail,
-                    reply_to_message_id=update.message.reply_to_message.message_id,
+                    reply_to_message_id=message_idx,
                     progress=progress_for_pyrogram,
                     progress_args=(
                         Translation.UPLOAD_START,
-                        update.message,
+                        query.message,
                         start_time
                     )
                 )
@@ -197,21 +197,21 @@ async def ddl_call_back(bot, update):
                 pass
             time_taken_for_download = (end_one - start).seconds
             time_taken_for_upload = (end_two - end_one).seconds
-            await bot.edit_message_text(
+            await client.edit_message_text(
                 text=Translation.AFTER_SUCCESSFUL_UPLOAD_MSG_WITH_TS.format(time_taken_for_download, time_taken_for_upload),
-                chat_id=update.message.chat.id,
-                message_id=update.message.message_id,
+                chat_id=query.message.chat.id,
+                message_id=query.message.message_id,
                 disable_web_page_preview=True
             )
     else:
-        await bot.edit_message_text(
+        await client.edit_message_text(
             text=Translation.NO_VOID_FORMAT_FOUND.format("Incorrect Link"),
-            chat_id=update.message.chat.id,
-            message_id=update.message.message_id,
+            chat_id=query.message.chat.id,
+            message_id=query.message.message_id,
             disable_web_page_preview=True
         )
 
-async def download_coroutine(bot, session, url, file_name, chat_id, message_id, start):
+async def download_coroutine(client, session, url, file_name, chat_id, message_id, start):
     downloaded = 0
     display_message = ""
     async with session.get(url, timeout=Config.PROCESS_MAX_TIMEOUT) as response:
@@ -219,7 +219,7 @@ async def download_coroutine(bot, session, url, file_name, chat_id, message_id, 
         content_type = response.headers["Content-Type"]
         if "text" in content_type and total_length < 500:
             return await response.release()
-        await bot.edit_message_text(
+        await client.edit_message_text(
             chat_id,
             message_id,
             text="""Initiating Download
@@ -257,7 +257,7 @@ async def download_coroutine(bot, session, url, file_name, chat_id, message_id, 
     TimeFormatter(estimated_total_time)
 )
                         if current_message != display_message:
-                            await bot.edit_message_text(
+                            await client.edit_message_text(
                                 chat_id,
                                 message_id,
                                 text=current_message
