@@ -9,7 +9,8 @@ import os
 import shutil
 import time
 from datetime import datetime
-
+import requests
+from urllib.parse import urlparse
 from plugins.config import Config
 from plugins.translation import Translation
 from plugins.custom_thumbnail import *
@@ -91,36 +92,24 @@ async def youtube_dl_call_back(client, query):
                 l = entity.length
                 youtube_dl_url = youtube_dl_url[o:o + l]
 
-    try:
-        if "youtu" in youtube_dl_url or "youtube" in youtube_dl_url:
-            logger.info('cant define file size for youtube videos')
-        else:
-            xLAZY_BAAPUx_d_size = requests.head(youtube_dl_url)    
-            xLAZY_BAAPUx_t_length = int(xLAZY_BAAPUx_d_size.headers.get("Content-Length", 0))
-            total_length = humanbytes(xLAZY_BAAPUx_t_length)
-            xLAZY_BAAPUx_path = urlparse(youtube_dl_url).path
-            xLAZY_BAAPUx_u_name = os.path.basename(xLAZY_BAAPUx_path)
-        logger.info(total_length)
-        
-        namee = "undefined" if "youtu" in youtube_dl_url or "youtube" in youtube_dl_url else xLAZY_BAAPUx_u_name 
-        sizee = "undefined" if "youtu" in youtube_dl_url or "youtube" in youtube_dl_url else total_length 
-        template_name = custom_file_name if custom_file_name else "**⚠ You haven't given any custom name...**"
-        xLAZY_BAAPUx_init = await query.edit_message_text(
-                        text=f"ღ♡ ɪɴɪᴛɪᴀᴛɪɴɢ ʟᴀᴢʏ ᴄᴏɴꜱᴛʀᴜᴄᴛɪᴏɴ ♡♪ \n⬇️⏬ {namee}",
-                    )
-        await query.edit_message_text(f"**ღ♡ ʀᴜɴɴɪɴɢ ʟᴀᴢʏ ᴄᴏɴꜱᴛʀᴜᴄᴛɪᴏɴ ♡♪**\n**ᵉⁿʲᵒʸ ˢᵘᵖᵉʳᶠᵃˢᵗ ᵈᵒʷⁿˡᵒᵈ ᵇʸ [ᴸᵃᶻʸᴰᵉᵛᵉˡᵒᵖᵉʳʳ](https://t.me/LazyDeveloper)◔_◔** \n\n**░░✩ 📂𝐎𝐑𝐆 𝐅𝐈𝐋𝐄𝐍𝐀𝐌𝐄 ✩ **\n<code>{namee}</code>\n\n**░░✩ 📝𝐍𝐄𝐖 𝐍𝐀𝐌𝐄 ✩ **\n<code>{template_name}</code>\n\n███████████████████████\n⚡️**ᴅᴏᴡɴʟᴏᴀᴅɪɴɢ** | 🧬ѕιzє: {sizee}", disable_web_page_preview=True,)
-        # progress to be displayed to the user
-        # i am currently work on this to display current progress in progress bar in the chat
-        # if you have code then you can contact me @LazyDeveloperr on telegram - instagram 
-        # with love 💘 @LazyDeveloperr
-    except Exception as e:
-        await xLAZY_BAAPUx_init.edit(e)
-        pass
-    try:
-        lazy_sticker = await query.message.reply_sticker(sticker=random.choice(lazystickerset))
-    except Exception as e:
-        await xLAZY_BAAPUx_init.edit(e)
-        pass
+    if "youtu" in youtube_dl_url or "youtube" in youtube_dl_url:
+        logger.info('cant define file size for youtube videos')
+    else:
+        xLAZY_BAAPUx_d_size = requests.head(youtube_dl_url)    
+        xLAZY_BAAPUx_t_length = int(xLAZY_BAAPUx_d_size.headers.get("Content-Length", 0))
+        total_length = humanbytes(xLAZY_BAAPUx_t_length)
+        xLAZY_BAAPUx_path = urlparse(youtube_dl_url).path
+        xLAZY_BAAPUx_u_name = os.path.basename(xLAZY_BAAPUx_path)
+    logger.info(total_length)
+    
+    namee = "undefined" if "youtu" in youtube_dl_url or "youtube" in youtube_dl_url else xLAZY_BAAPUx_u_name 
+    sizee = "undefined" if "youtu" in youtube_dl_url or "youtube" in youtube_dl_url else total_length 
+    template_name = custom_file_name if custom_file_name else "**⚠ You haven't given any custom name...**"
+    xLAZY_BAAPUx_init = await query.edit_message_text(
+                    text=f"ღ♡ ɪɴɪᴛɪᴀᴛɪɴɢ ʟᴀᴢʏ ᴄᴏɴꜱᴛʀᴜᴄᴛɪᴏɴ ♡♪ \n⬇️⏬ {namee}",
+                )
+    await query.edit_message_text(f"**ღ♡ ʀᴜɴɴɪɴɢ ʟᴀᴢʏ ᴄᴏɴꜱᴛʀᴜᴄᴛɪᴏɴ ♡♪**\n**ᵉⁿʲᵒʸ ˢᵘᵖᵉʳᶠᵃˢᵗ ᵈᵒʷⁿˡᵒᵈ ᵇʸ [ᴸᵃᶻʸᴰᵉᵛᵉˡᵒᵖᵉʳʳ](https://t.me/LazyDeveloper)◔_◔** \n\n**░░✩ 📂𝐎𝐑𝐆 𝐅𝐈𝐋𝐄𝐍𝐀𝐌𝐄 ✩ **\n<code>{namee}</code>\n\n**░░✩ 📝𝐍𝐄𝐖 𝐍𝐀𝐌𝐄 ✩ **\n<code>{template_name}</code>\n\n███████████████████████\n⚡️**ᴅᴏᴡɴʟᴏᴀᴅɪɴɢ** | 🧬ѕιzє: {sizee}", disable_web_page_preview=True,)
+    lazy_sticker = await query.message.reply_sticker(sticker=random.choice(lazystickerset))
     
     description = Translation.CUSTOM_CAPTION_UL_FILE
     if "fulltitle" in response_json:
