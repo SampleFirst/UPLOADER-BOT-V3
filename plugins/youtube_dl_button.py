@@ -209,34 +209,40 @@ async def youtube_dl_call_back(client, query):
                 download_directory,
                 tmp_directory_for_each_user,
                 is_w_f,
-                Config.DEF_WATER_MARK_FILE,
+                DEF_WATER_MARK_FILE,
                 300,
                 9
             )
             logger.info(images)'''
-            await client.edit_message_text(
-                text=Translation.UPLOAD_START,
-                chat_id=query.message.chat.id,
-                message_id=message_idx
+            await query.edit_message_text(
+                text="**initiating Lazy Upload** ⚡",
             )
 
-            # ref: message from @Sources_codes
             start_time = time.time()
             if (await db.get_upload_as_doc(query.from_user.id)) is False:
                 thumbnail = await Gthumb01(client, query)
+                await lazy_sticker.delete()
+                caption = custom_file_name
+                try:
+                    lazy_sticker01 = await query.message.reply_sticker(sticker=random.choice(lazystickerset))
+                except Exception as e:
+                    await client.send_message(chat_id = query.message.chat.id, text=f"🥳")
+                    pass
+                
                 await client.send_document(
                     chat_id=query.message.chat.id,
                     document=download_directory,
                     thumb=thumbnail,
-                    caption=description,
+                    caption=caption,
                     reply_to_message_id=message_idx,
                     progress=progress_for_pyrogram,
                     progress_args=(
-                        Translation.UPLOAD_START,
+                        script.UPLOAD_START,
                         query.message,
                         start_time
                     )
                 )
+                await lazy_sticker01.delete()
             else:
                  width, height, duration = await Mdata01(download_directory)
                  thumb_image_path = await Gthumb02(client, query, duration, download_directory)
