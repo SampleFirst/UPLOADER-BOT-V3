@@ -1,27 +1,40 @@
-
 import logging
-logging.basicConfig(level=logging.DEBUG,
-                    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-logger = logging.getLogger(__name__)
-
 import os
+from pyrogram import Client, filters
 from plugins.config import Config
 
-from pyrogram import Client as Ntbot
-from pyrogram import filters
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
 logging.getLogger("pyrogram").setLevel(logging.WARNING)
 
 
-if __name__ == "__main__" :
+class Bot(Client):
+
+    def __init__(self):
+        super().__init__(
+            "UploaderBot",
+            api_id=Config.API_ID,
+            api_hash=Config.API_HASH,
+            bot_token=Config.BOT_TOKEN,
+            workers=50,
+            plugins={"root": "plugins"},
+            sleep_threshold=5,
+        )
+
+    async def start(self):
+        await super().start()
+        me = await self.get_me()
+        print(f"New session started for {me.first_name} ({me.username})")
+
+    async def stop(self):
+        await super().stop()
+        print("Session stopped. Bye!!")
+
+
+if __name__ == "__main__":
     # create download directory, if not exist
     if not os.path.isdir(Config.DOWNLOAD_LOCATION):
         os.makedirs(Config.DOWNLOAD_LOCATION)
-    plugins = dict(root="plugins")
-    Bot = Ntbot(
-        "Uploader Bot",
-        bot_token=Config.BOT_TOKEN,
-        api_id=Config.API_ID,
-        api_hash=Config.API_HASH,
-        plugins=plugins)
-    app = Bot
-    app.run()    
+
+    app = Bot()
+    app.run()
