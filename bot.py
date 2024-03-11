@@ -30,11 +30,5 @@ class Bot(Client):
         await super().stop()
         print("Session stopped. Bye!!")
 
-
-if __name__ == "__main__":
-    # create download directory, if not exist
-    if not os.path.isdir(Config.DOWNLOAD_LOCATION):
-        os.makedirs(Config.DOWNLOAD_LOCATION)
-
-    app = Bot()
-    app.run()
+app = Bot()
+app.run()
