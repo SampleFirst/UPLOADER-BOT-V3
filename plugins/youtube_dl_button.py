@@ -246,10 +246,17 @@ async def youtube_dl_call_back(client, query):
             else:
                  width, height, duration = await Mdata01(download_directory)
                  thumb_image_path = await Gthumb02(client, query, duration, download_directory)
+                 await lazy_sticker.delete()
+                 caption = custom_file_name
+                 try:
+                     lazy_sticker02 = await query.message.reply_sticker(sticker=random.choice(lazystickerset))
+                 except Exception as e:
+                     await client.send_message(chat_id = query.message.chat.id, text=f"🥳")
+                     pass
                  await client.send_video(
                     chat_id=query.message.chat.id,
                     video=download_directory,
-                    caption=description,
+                    caption=caption,
                     duration=duration,
                     width=width,
                     height=height,
@@ -258,46 +265,63 @@ async def youtube_dl_call_back(client, query):
                     reply_to_message_id=message_idx,
                     progress=progress_for_pyrogram,
                     progress_args=(
-                        Translation.UPLOAD_START,
+                        script.UPLOAD_START,
                         query.message,
                         start_time
                     )
                 )
+                 await lazy_sticker02.delete()
             if tg_send_type == "audio":
                 duration = await Mdata03(download_directory)
                 thumbnail = await Gthumb01(client, query)
+                await lazy_sticker.delete()
+                caption = custom_file_name
+                try:
+                    lazy_sticker03 = await query.message.reply_sticker(sticker=random.choice(lazystickerset))
+                except Exception as e:
+                    await client.send_message(chat_id = query.message.chat.id, text=f"🥳")
+                    pass
                 await client.send_audio(
                     chat_id=query.message.chat.id,
                     audio=download_directory,
                     caption=description,
-                    parse_mode="HTML",
+                    parse_mode=enums.ParseMode.HTML,
                     duration=duration,
                     thumb=thumbnail,
                     reply_to_message_id=message_idx,
                     progress=progress_for_pyrogram,
                     progress_args=(
-                        Translation.UPLOAD_START,
+                        script.UPLOAD_START,
                         query.message,
                         start_time
                     )
                 )
+                await lazy_sticker03.delete()
             elif tg_send_type == "vm":
                 width, duration = await Mdata02(download_directory)
                 thumbnail = await Gthumb02(client, query, duration, download_directory)
+                await lazy_sticker.delete()
+                caption = custom_file_name
+                try:
+                    lazy_sticker04 = await query.message.reply_sticker(sticker=random.choice(lazystickerset))
+                except Exception as e:
+                    await client.send_message(chat_id = query.message.chat.id, text=f"🥳")
+                    pass
                 await client.send_video_note(
                     chat_id=query.message.chat.id,
                     video_note=download_directory,
                     duration=duration,
                     length=width,
                     thumb=thumbnail,
-                    reply_to_message_id=message_idx,
+                    reply_to_message_id=query.message.reply_to_message.message_id,
                     progress=progress_for_pyrogram,
                     progress_args=(
-                        Translation.UPLOAD_START,
+                        script.UPLOAD_START,
                         query.message,
                         start_time
                     )
                 )
+                await lazy_sticker04.delete()
             else:
                 logger.info("Did this happen? :\\")
             end_two = datetime.now()
@@ -307,9 +331,8 @@ async def youtube_dl_call_back(client, query):
                 os.remove(thumbnail)
             except:
                 pass
-            await client.edit_message_text(
-                text=Translation.AFTER_SUCCESSFUL_UPLOAD_MSG_WITH_TS.format(time_taken_for_download, time_taken_for_upload),
-                chat_id=query.message.chat.id,
-                message_id=message_idx,
+            await query.edit_message_text(
+                text=script.AFTER_SUCCESSFUL_UPLOAD_MSG_WITH_TS.format(time_taken_for_download, time_taken_for_upload, youtube_dl_url, namee, template_name , sizee),
                 disable_web_page_preview=True
             )
+
