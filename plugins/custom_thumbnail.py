@@ -31,7 +31,7 @@ async def photo_handler(client: Client, message: Message):
     if not message.from_user:
         return await message.reply_text("I don't know about you, sir :(")
     await add_user_to_database(client, message)
-    if Config.messageS_CHANNEL:
+    if Config.UPDATES_CHANNEL:
         fsub = await handle_force_subscribe(client, message)
         if fsub == 400:
             return
@@ -45,7 +45,7 @@ async def delete_thumb_handler(client: Client, message: Message):
     if not message.from_user:
         return await message.reply_text("I don't know about you, sir :(")
     await add_user_to_database(client, message)
-    if Config.messageS_CHANNEL:
+    if Config.UPDATES_CHANNEL:
         fsub = await handle_force_subscribe(client, message)
         if fsub == 400:
             return
